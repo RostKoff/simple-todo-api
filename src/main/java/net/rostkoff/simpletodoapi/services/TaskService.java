@@ -1,34 +1,36 @@
 package net.rostkoff.simpletodoapi.services;
 
+import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
-import net.rostkoff.simpletodoapi.client.mappers.TaskDtoMapper;
+import net.rostkoff.simpletodoapi.client.mappers.CalendarTaskDtoMapper;
+import net.rostkoff.simpletodoapi.client.mappers.TaskMapper;
 import net.rostkoff.simpletodoapi.data.model.Task;
 import net.rostkoff.simpletodoapi.data.repositories.TaskRepository;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
+import net.rostkoff.simpletodoapi.exceptions.tasks.TaskConflict;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
-import org.springframework.cglib.core.Local;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.DateTimeException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskService {
     private final TaskRepository repository;
-    private final TaskDtoMapper dtoMapper;
+    private final CalendarTaskDtoMapper calendarDtoMapper;
+    private final TaskMapper entityMapper;
 
-    public TaskService(TaskRepository repository, TaskDtoMapper dtoMapper) {
+    public TaskService(TaskRepository repository, CalendarTaskDtoMapper calendarDtoMapper, TaskMapper entityMapper) {
         this.repository = repository;
-        this.dtoMapper = dtoMapper;
+        this.calendarDtoMapper = calendarDtoMapper;
+        this.entityMapper = entityMapper;
     }
 
-    public List<TaskDto> getAllTasksBetween(String firstDate, String lastDate) {
+    public List<CalendarTaskDto> getAllTasksBetween(String firstDate, String lastDate) {
         LocalDateTime first, last;
         System.out.println(firstDate);
         try {
@@ -47,7 +49,16 @@ public class TaskService {
             throw new TaskNotFound();
 
         return entities.stream()
-                .map(dtoMapper::map)
+                .map(calendarDtoMapper::map)
                 .toList();
+    }
+
+    public ResponseEntity<String> addTask(TaskDto taskDto) {
+        if(taskDto.getId() != null && repository.existsById(taskDto.getId()))
+            throw new TaskConflict("The task you are trying to add already exists");
+
+        var entity = entityMapper.map(taskDto);
+        repository.save(entity);
+        return ResponseEntity.ok("Task Added");
     }
 }
