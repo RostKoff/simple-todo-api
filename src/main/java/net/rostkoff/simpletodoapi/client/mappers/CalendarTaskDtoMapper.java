@@ -14,9 +14,6 @@ public class CalendarTaskDtoMapper implements IMap<Task, CalendarTaskDto> {
         dto.setStart(entity.getStartDate());
         dto.setEnd(entity.getEndDate());
         dto.setTitle(entity.getTitle());
-        if(entity.getCategory() != null)
-            dto.setBackgroundColor("#" + entity.getCategory().getColour());
         return dto;
     }
-
 }

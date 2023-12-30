@@ -15,5 +15,4 @@ public class CalendarTaskDto {
     private LocalDateTime start;
     private LocalDateTime end;
     private String title;
-    private String backgroundColor;
 }

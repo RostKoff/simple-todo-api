@@ -12,13 +12,10 @@ public class Task {
     private Long id;
     private String title;
     private String description;
-    private String type;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private LocalDateTime closeDate;
     private boolean allDay;
-    @ManyToOne
-    private Category category;
 
     public Long getId() {
         return id;
@@ -42,14 +39,6 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public LocalDateTime getStartDate() {
@@ -82,13 +71,5 @@ public class Task {
 
     public void setAllDay(boolean allDay) {
         this.allDay = allDay;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
     }
 }
