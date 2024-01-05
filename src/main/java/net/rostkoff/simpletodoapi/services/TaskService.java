@@ -3,6 +3,8 @@ package net.rostkoff.simpletodoapi.services;
 import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
 import net.rostkoff.simpletodoapi.client.mappers.CalendarTaskDtoMapper;
+import net.rostkoff.simpletodoapi.client.mappers.ICatalogMappers;
+import net.rostkoff.simpletodoapi.client.mappers.MapperCatalog;
 import net.rostkoff.simpletodoapi.client.mappers.TaskMapper;
 import net.rostkoff.simpletodoapi.data.model.Task;
 import net.rostkoff.simpletodoapi.data.repositories.TaskRepository;
@@ -21,13 +23,11 @@ import java.util.List;
 @Service
 public class TaskService {
     private final TaskRepository repository;
-    private final CalendarTaskDtoMapper calendarDtoMapper;
-    private final TaskMapper entityMapper;
+    private final ICatalogMappers mapperCatalog;
 
-    public TaskService(TaskRepository repository, CalendarTaskDtoMapper calendarDtoMapper, TaskMapper entityMapper) {
+    public TaskService(TaskRepository repository, ICatalogMappers mapperCatalog) {
         this.repository = repository;
-        this.calendarDtoMapper = calendarDtoMapper;
-        this.entityMapper = entityMapper;
+        this.mapperCatalog = mapperCatalog;
     }
 
     public List<CalendarTaskDto> getAllTasksBetween(String firstDate, String lastDate) {
@@ -49,7 +49,7 @@ public class TaskService {
             throw new TaskNotFound();
 
         return entities.stream()
-                .map(calendarDtoMapper::map)
+                .map(mapperCatalog.getCalendarTaskDtoMapper()::map)
                 .toList();
     }
 
@@ -57,8 +57,23 @@ public class TaskService {
         if(taskDto.getId() != null && repository.existsById(taskDto.getId()))
             throw new TaskConflict("The task you are trying to add already exists");
 
-        var entity = entityMapper.map(taskDto);
+        var entity = mapperCatalog.getTaskMapper().map(taskDto);
         repository.save(entity);
         return ResponseEntity.ok("Task Added");
     }
+
+    public TaskDto getTask(Long id) {
+        if(!repository.existsById(id))
+            throw new TaskNotFound();
+        return mapperCatalog.getTaskDtoMapper().map(repository.findById(id).get());
+    }
+
+    public ResponseEntity<String> deleteTask(Long id) {
+        if(!repository.existsById(id))
+            throw new TaskNotFound();
+        repository.deleteById(id);
+        return ResponseEntity.ok("Task Deleted");
+    }
+
+    
 }

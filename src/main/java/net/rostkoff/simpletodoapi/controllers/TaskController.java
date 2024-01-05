@@ -19,12 +19,23 @@ public class TaskController {
 
     @CrossOrigin(origins = "http://localhost:8080")
     @GetMapping("/calendar/all/between")
-    public List<CalendarTaskDto> getAllCalendarTasksBetween(@RequestParam String firstDate, @RequestParam String lastDate) {
+    public List<CalendarTaskDto> getAllCalendarTasksBetween(@RequestParam("firstDate") String firstDate, @RequestParam("lastDate") String lastDate) {
+        System.out.println("firstDate = " + firstDate + " lastDate = " + lastDate);
         return service.getAllTasksBetween(firstDate, lastDate);
     }
 
     @PostMapping("/add")
     public ResponseEntity<String> addTask(@RequestBody TaskDto taskDto) {
         return service.addTask(taskDto);
+    }
+    
+    @GetMapping("/{id}")
+    public TaskDto getTask(@PathVariable("id") Long id) {
+        return service.getTask(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTask(@PathVariable("id") Long id) {
+        return service.deleteTask(id);
     }
 }
