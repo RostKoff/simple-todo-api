@@ -2,10 +2,7 @@ package net.rostkoff.simpletodoapi.services;
 
 import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
-import net.rostkoff.simpletodoapi.client.mappers.CalendarTaskDtoMapper;
 import net.rostkoff.simpletodoapi.client.mappers.ICatalogMappers;
-import net.rostkoff.simpletodoapi.client.mappers.MapperCatalog;
-import net.rostkoff.simpletodoapi.client.mappers.TaskMapper;
 import net.rostkoff.simpletodoapi.data.model.Task;
 import net.rostkoff.simpletodoapi.data.repositories.TaskRepository;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
@@ -53,13 +50,13 @@ public class TaskService {
                 .toList();
     }
 
-    public ResponseEntity<String> addTask(TaskDto taskDto) {
+    public ResponseEntity<Long> addTask(TaskDto taskDto) {
         if(taskDto.getId() != null && repository.existsById(taskDto.getId()))
             throw new TaskConflict("The task you are trying to add already exists");
 
         var entity = mapperCatalog.getTaskMapper().map(taskDto);
-        repository.save(entity);
-        return ResponseEntity.ok("Task Added");
+        var savedTask = repository.save(entity);
+        return ResponseEntity.ok(savedTask.getId());
     }
 
     public TaskDto getTask(Long id) {
@@ -73,6 +70,14 @@ public class TaskService {
             throw new TaskNotFound();
         repository.deleteById(id);
         return ResponseEntity.ok("Task Deleted");
+    }
+
+    public ResponseEntity<String> updateTask(TaskDto taskDto) {
+        if(!repository.existsById(taskDto.getId()))
+            throw new TaskNotFound();
+        var entity = mapperCatalog.getTaskMapper().map(taskDto);
+        repository.save(entity);
+        return ResponseEntity.ok("Task Updated");
     }
 
     

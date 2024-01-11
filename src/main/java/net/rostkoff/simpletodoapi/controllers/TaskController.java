@@ -24,18 +24,23 @@ public class TaskController {
         return service.getAllTasksBetween(firstDate, lastDate);
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<String> addTask(@RequestBody TaskDto taskDto) {
-        return service.addTask(taskDto);
-    }
-    
     @GetMapping("/{id}")
     public TaskDto getTask(@PathVariable("id") Long id) {
         return service.getTask(id);
     }
 
+    @PostMapping("/")
+    public ResponseEntity<Long> addTask(@RequestBody TaskDto taskDto) {
+        return service.addTask(taskDto);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTask(@PathVariable("id") Long id) {
         return service.deleteTask(id);
+    }
+
+    @PutMapping("/")
+    public ResponseEntity<String> updateTask(@RequestBody TaskDto taskDto) {
+        return service.updateTask(taskDto);
     }
 }

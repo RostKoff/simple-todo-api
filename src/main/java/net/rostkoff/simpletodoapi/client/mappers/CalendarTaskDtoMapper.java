@@ -14,6 +14,7 @@ public class CalendarTaskDtoMapper implements IMap<Task, CalendarTaskDto> {
         dto.setStart(entity.getStartDate());
         dto.setEnd(entity.getEndDate());
         dto.setTitle(entity.getTitle());
+        dto.setUrl("/tasks/" + entity.getId());
         return dto;
     }
 }
