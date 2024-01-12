@@ -8,6 +8,8 @@ import net.rostkoff.simpletodoapi.data.repositories.TaskRepository;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskConflict;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +31,6 @@ public class TaskService {
 
     public List<CalendarTaskDto> getAllTasksBetween(String firstDate, String lastDate) {
         LocalDateTime first, last;
-        System.out.println(firstDate);
         try {
             first = LocalDateTime.parse(firstDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             last = LocalDateTime.parse(lastDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
@@ -40,7 +41,7 @@ public class TaskService {
         if(last.isBefore(first))
             throw new TaskBadRequest("The last date cannot be earlier than the first date");
 
-        var entities = (Collection<Task>) repository.findByStartDateEndDateBetween(first, last);
+        var entities = repository.findByStartDateEndDateBetween(first, last);
 
         if(entities.size() == 0)
             throw new TaskNotFound();
@@ -52,11 +53,11 @@ public class TaskService {
 
     public ResponseEntity<Long> addTask(TaskDto taskDto) {
         if(taskDto.getId() != null && repository.existsById(taskDto.getId()))
-            throw new TaskConflict("The task you are trying to add already exists");
+            throw new TaskConflict(String.format("Task with id %d already exists", taskDto.getId()));
 
         var entity = mapperCatalog.getTaskMapper().map(taskDto);
         var savedTask = repository.save(entity);
-        return ResponseEntity.ok(savedTask.getId());
+        return ResponseEntity.accepted().body(savedTask.getId());
     }
 
     public TaskDto getTask(Long id) {
@@ -79,6 +80,4 @@ public class TaskService {
         repository.save(entity);
         return ResponseEntity.ok("Task Updated");
     }
-
-    
 }

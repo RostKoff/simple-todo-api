@@ -1,5 +1,6 @@
 package net.rostkoff.simpletodoapi.exceptions.handlers;
 
+import net.rostkoff.simpletodoapi.exceptions.ErrorResponse;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskConflict;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
@@ -13,17 +14,20 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class TaskExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(TaskBadRequest.class)
-    protected ResponseEntity<Object> handleBadRequest(RuntimeException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    protected ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex, WebRequest request) {
+        var response = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TaskNotFound.class)
     protected ResponseEntity<Object> handleNotFound(RuntimeException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+        var response = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(TaskConflict.class)
     protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+        var response = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 }

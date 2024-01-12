@@ -3,6 +3,7 @@ package net.rostkoff.simpletodoapi.controllers;
 import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
 import net.rostkoff.simpletodoapi.services.TaskService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,6 @@ public class TaskController {
     @CrossOrigin(origins = "http://localhost:8080")
     @GetMapping("/calendar/all/between")
     public List<CalendarTaskDto> getAllCalendarTasksBetween(@RequestParam("firstDate") String firstDate, @RequestParam("lastDate") String lastDate) {
-        System.out.println("firstDate = " + firstDate + " lastDate = " + lastDate);
         return service.getAllTasksBetween(firstDate, lastDate);
     }
 
