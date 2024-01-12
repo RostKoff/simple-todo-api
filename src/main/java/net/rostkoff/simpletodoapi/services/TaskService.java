@@ -3,20 +3,17 @@ package net.rostkoff.simpletodoapi.services;
 import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
 import net.rostkoff.simpletodoapi.client.mappers.ICatalogMappers;
-import net.rostkoff.simpletodoapi.data.model.Task;
 import net.rostkoff.simpletodoapi.data.repositories.TaskRepository;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskConflict;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -35,7 +32,7 @@ public class TaskService {
             first = LocalDateTime.parse(firstDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
             last = LocalDateTime.parse(lastDate, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         } catch (DateTimeParseException ex) {
-            throw new TaskBadRequest(ex.getMessage());
+            throw new TaskBadRequest("Invalid date format");
         }
 
         if(last.isBefore(first))
