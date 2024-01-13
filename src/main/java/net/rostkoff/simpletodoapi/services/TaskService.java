@@ -8,8 +8,11 @@ import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskConflict;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import jakarta.validation.ConstraintViolationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -53,8 +56,12 @@ public class TaskService {
             throw new TaskConflict(String.format("Task with id %d already exists", taskDto.getId()));
 
         var entity = mapperCatalog.getTaskMapper().map(taskDto);
-        var savedTask = repository.save(entity);
-        return ResponseEntity.accepted().body(savedTask.getId());
+        try {
+            var savedTask = repository.save(entity);
+            return ResponseEntity.accepted().body(savedTask.getId());
+        } catch(ConstraintViolationException ex) {
+            throw new TaskBadRequest("Invalid data format");
+        }
     }
 
     public TaskDto getTask(Long id) {
@@ -74,7 +81,11 @@ public class TaskService {
         if(!repository.existsById(taskDto.getId()))
             throw new TaskNotFound();
         var entity = mapperCatalog.getTaskMapper().map(taskDto);
-        repository.save(entity);
+        try {
+            repository.save(entity);
+        } catch (ConstraintViolationException ex) {
+            throw new TaskBadRequest("Invalid data format");
+        }
         return ResponseEntity.ok("Task Updated");
     }
 }

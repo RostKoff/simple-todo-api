@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
+import jakarta.validation.ConstraintViolationException;
 import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
 import net.rostkoff.simpletodoapi.client.mappers.CalendarTaskDtoMapper;
@@ -95,6 +96,23 @@ public class TaskServiceTests {
         
         assertThrows(TaskConflict.class, () -> {
             service.addTask(task);
+        });
+    }
+
+    @Test
+    public void addTaskThrowsBadRequestExceptionIfTaskHasInvalidData() {
+        var task = new Task();
+        var taskMapper = Mockito.mock(TaskMapper.class);
+        var captor = ArgumentCaptor.forClass(Task.class);
+        
+        task.setId(1L);
+
+        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
+        Mockito.when(taskMapper.map(Mockito.any(TaskDto.class))).thenReturn(task);
+        Mockito.when(repository.save(task)).thenThrow(new ConstraintViolationException(null));
+        
+        assertThrows(TaskBadRequest.class, () -> {
+            service.addTask(new TaskDto());
         });
     }
 
@@ -197,6 +215,24 @@ public class TaskServiceTests {
         });
     }
 
+    @Test void updateTaskThrowsBadRequestExceptionIfTaskHasInvalidData() {
+        var task = new Task();
+        var taskDto = new TaskDto();        
+        var taskMapper = Mockito.mock(TaskMapper.class);
+        var captor = ArgumentCaptor.forClass(Task.class);
+
+        task.setId(1L);
+        
+        Mockito.when(repository.existsById(Mockito.any())).thenReturn(true);
+        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
+        Mockito.when(taskMapper.map(taskDto)).thenReturn(task);
+        Mockito.when(repository.save(task)).thenThrow(new ConstraintViolationException(null));
+        
+        assertThrows(TaskBadRequest.class, () -> {
+            service.updateTask(taskDto);
+        });
+    }
+
     @Test
     public void getAllTasksBetweenThrowsBadRequestExceptionIfFirstDateIsInvalid() {
         assertThrows(TaskBadRequest.class, () -> {
@@ -245,7 +281,11 @@ public class TaskServiceTests {
 
 
 
-    // TODO: Ask about dependency call verification.
+    /* TODO: 
+        - Ask about dependency call verification
+        - Ask about nulls in tests.
+        - Ask about tests with exceptions in controller.
+    */
 
 
 }
