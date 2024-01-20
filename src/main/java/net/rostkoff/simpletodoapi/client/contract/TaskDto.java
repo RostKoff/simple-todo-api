@@ -16,6 +16,6 @@ public class TaskDto {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private LocalDateTime closeDate;
-    private boolean allDay;
+    private boolean allDay; 
 }
 

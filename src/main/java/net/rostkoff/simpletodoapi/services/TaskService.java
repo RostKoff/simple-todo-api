@@ -8,7 +8,6 @@ import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskConflict;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

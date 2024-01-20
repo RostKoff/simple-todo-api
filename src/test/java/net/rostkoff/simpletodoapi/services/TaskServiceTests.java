@@ -103,7 +103,6 @@ public class TaskServiceTests {
     public void addTaskThrowsBadRequestExceptionIfTaskHasInvalidData() {
         var task = new Task();
         var taskMapper = Mockito.mock(TaskMapper.class);
-        var captor = ArgumentCaptor.forClass(Task.class);
         
         task.setId(1L);
 
@@ -219,7 +218,6 @@ public class TaskServiceTests {
         var task = new Task();
         var taskDto = new TaskDto();        
         var taskMapper = Mockito.mock(TaskMapper.class);
-        var captor = ArgumentCaptor.forClass(Task.class);
 
         task.setId(1L);
         
