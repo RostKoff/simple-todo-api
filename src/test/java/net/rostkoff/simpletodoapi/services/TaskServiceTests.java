@@ -12,6 +12,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,10 +23,7 @@ import org.springframework.http.ResponseEntity;
 import jakarta.validation.ConstraintViolationException;
 import net.rostkoff.simpletodoapi.client.contract.CalendarTaskDto;
 import net.rostkoff.simpletodoapi.client.contract.TaskDto;
-import net.rostkoff.simpletodoapi.client.mappers.CalendarTaskDtoMapper;
 import net.rostkoff.simpletodoapi.client.mappers.ICatalogMappers;
-import net.rostkoff.simpletodoapi.client.mappers.TaskDtoMapper;
-import net.rostkoff.simpletodoapi.client.mappers.TaskMapper;
 import net.rostkoff.simpletodoapi.data.model.Task;
 import net.rostkoff.simpletodoapi.data.repositories.TaskRepository;
 import net.rostkoff.simpletodoapi.exceptions.tasks.TaskBadRequest;
@@ -35,7 +33,7 @@ import net.rostkoff.simpletodoapi.exceptions.tasks.TaskNotFound;
 public class TaskServiceTests {
     @Mock
     private TaskRepository repository;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ICatalogMappers mapperCatalog;
     @InjectMocks
     private TaskService service;
@@ -55,16 +53,16 @@ public class TaskServiceTests {
     @Test
     public void addTaskReturnsIdWithStatus202() {
         var task = new Task();
+        var taskDto = new TaskDto();
         ResponseEntity<Long> expected = ResponseEntity.accepted().body(1L),
         actual;
-        var taskMapper = Mockito.mock(TaskMapper.class);
 
+        taskDto.setId(1L);
         task.setId(1L);
         
-        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
-        Mockito.when(taskMapper.map(Mockito.any(TaskDto.class))).thenReturn(task);
+        Mockito.when(mapperCatalog.getTaskMapper().map(taskDto)).thenReturn(task);
         Mockito.when(repository.save(task)).thenReturn(task);
-        actual = service.addTask(new TaskDto());
+        actual = service.addTask(taskDto);
 
         assertEquals(expected, actual);
     }
@@ -72,15 +70,15 @@ public class TaskServiceTests {
     @Test
     public void addTaskSavesTaskIntoRepository() {
         var task = new Task();
-        var taskMapper = Mockito.mock(TaskMapper.class);
+        var taskDto = new TaskDto();
         var captor = ArgumentCaptor.forClass(Task.class);
         
+        taskDto.setId(1L);
         task.setId(1L);
 
-        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
-        Mockito.when(taskMapper.map(Mockito.any(TaskDto.class))).thenReturn(task);
+        Mockito.when(mapperCatalog.getTaskMapper().map(taskDto)).thenReturn(task);
         Mockito.when(repository.save(task)).thenReturn(task);
-        service.addTask(new TaskDto());
+        service.addTask(taskDto);
 
         verify(repository, times(1)).save(captor.capture());
         assertEquals(task, captor.getValue());
@@ -102,32 +100,31 @@ public class TaskServiceTests {
     @Test
     public void addTaskThrowsBadRequestExceptionIfTaskHasInvalidData() {
         var task = new Task();
-        var taskMapper = Mockito.mock(TaskMapper.class);
-        
+        var taskDto = new TaskDto();
+
+        taskDto.setId(1L);
         task.setId(1L);
 
-        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
-        Mockito.when(taskMapper.map(Mockito.any(TaskDto.class))).thenReturn(task);
+        Mockito.when(mapperCatalog.getTaskMapper().map(taskDto)).thenReturn(task);
         Mockito.when(repository.save(task)).thenThrow(new ConstraintViolationException(null));
         
         assertThrows(TaskBadRequest.class, () -> {
-            service.addTask(new TaskDto());
+            service.addTask(taskDto);
         });
     }
 
     @Test
     public void getTaskReturnsTaskDto() {
         var task = new Task();
-        var taskMapper = Mockito.mock(TaskDtoMapper.class);
         TaskDto expected = new TaskDto(), 
         actual;
 
+        task.setId(1L);
         expected.setId(1L);
 
         Mockito.when(repository.existsById(1L)).thenReturn(true);
         Mockito.when(repository.findById(1L)).thenReturn(Optional.of(task));
-        Mockito.when(mapperCatalog.getTaskDtoMapper()).thenReturn(taskMapper);
-        Mockito.when(taskMapper.map(task)).thenReturn(expected);
+        Mockito.when(mapperCatalog.getTaskDtoMapper().map(task)).thenReturn(expected);
 
         actual = service.getTask(1L);
         assertEquals(expected, actual);
@@ -176,10 +173,8 @@ public class TaskServiceTests {
     public void updateTaskReturnsOkResponse() {
         ResponseEntity<String> expected = ResponseEntity.ok("Task Updated"),
         actual;
-        var taskMapper = Mockito.mock(TaskMapper.class);
 
         Mockito.when(repository.existsById(Mockito.any())).thenReturn(true);
-        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
 
         actual = service.updateTask(new TaskDto());
 
@@ -190,14 +185,13 @@ public class TaskServiceTests {
     public void updateTaskUpdatesTaskInRepository() {
         var task = new Task();
         var taskDto = new TaskDto();        
-        var taskMapper = Mockito.mock(TaskMapper.class);
         var captor = ArgumentCaptor.forClass(Task.class);
 
+        taskDto.setId(1L);
         task.setId(1L);
         
         Mockito.when(repository.existsById(Mockito.any())).thenReturn(true);
-        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
-        Mockito.when(taskMapper.map(taskDto)).thenReturn(task);
+        Mockito.when(mapperCatalog.getTaskMapper().map(taskDto)).thenReturn(task);
 
         service.updateTask(taskDto);
 
@@ -217,13 +211,12 @@ public class TaskServiceTests {
     @Test void updateTaskThrowsBadRequestExceptionIfTaskHasInvalidData() {
         var task = new Task();
         var taskDto = new TaskDto();        
-        var taskMapper = Mockito.mock(TaskMapper.class);
 
+        taskDto.setId(1L);
         task.setId(1L);
         
         Mockito.when(repository.existsById(Mockito.any())).thenReturn(true);
-        Mockito.when(mapperCatalog.getTaskMapper()).thenReturn(taskMapper);
-        Mockito.when(taskMapper.map(taskDto)).thenReturn(task);
+        Mockito.when(mapperCatalog.getTaskMapper().map(taskDto)).thenReturn(task);
         Mockito.when(repository.save(task)).thenThrow(new ConstraintViolationException(null));
         
         assertThrows(TaskBadRequest.class, () -> {
@@ -264,14 +257,12 @@ public class TaskServiceTests {
     @Test
     public void getAllTasksBetweenReturnsListOfCalendarTaskDto() {
         var task = new Task();
-        var calendarTaskDtoMapper = Mockito.mock(CalendarTaskDtoMapper.class);
         var calendarTaskDto = new CalendarTaskDto();
         var expected = List.of(calendarTaskDto);
         List<CalendarTaskDto> actual;
 
         Mockito.when(repository.findByStartDateEndDateBetween(Mockito.any(), Mockito.any())).thenReturn(List.of(task));
-        Mockito.when(mapperCatalog.getCalendarTaskDtoMapper()).thenReturn(calendarTaskDtoMapper);
-        Mockito.when(calendarTaskDtoMapper.map(task)).thenReturn(calendarTaskDto);
+        Mockito.when(mapperCatalog.getCalendarTaskDtoMapper().map(task)).thenReturn(calendarTaskDto);
 
         actual = service.getAllTasksBetween("2023-01-01T00:00:00+01:00", "2023-01-02T00:00:00+01:00");
         assertEquals(expected, actual);
@@ -280,9 +271,8 @@ public class TaskServiceTests {
 
 
     /* TODO: 
-        - Ask about dependency call verification
-        - Ask about nulls in tests.
-        - Ask about tests with exceptions in controller.
+        - Spring exceptions?
+        - Handling
     */
 
 
